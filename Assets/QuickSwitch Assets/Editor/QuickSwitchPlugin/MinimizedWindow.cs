@@ -89,7 +89,7 @@ namespace QuickSwitch
                 if (textType != null)
                 {
                     assemblyName = assembly.FullName;
-                    Debug.Log("found assemblyName "+ assemblyName + " for "+ WindowTypeName);
+                    //Debug.Log("found assemblyName "+ assemblyName + " for "+ WindowTypeName);
                     break;
                 }
             }
