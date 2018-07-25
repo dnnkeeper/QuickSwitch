@@ -44,6 +44,17 @@ namespace QuickSwitch
                 if (windowType != null)
                 {
                     fullWindow = EditorWindow.GetWindow(windowType);
+
+                    if (fullWindow.GetType().ToString().StartsWith("UnityEditor.InspectorWindow"))
+                    {
+                        if (CheckInspectorIsLocked(fullWindow))
+                        {
+                            //Debug.LogWarning("locked inspector - create a new one!");
+                            fullWindow = ScriptableObject.CreateInstance(Type.GetType("UnityEditor.InspectorWindow, UnityEditor")) as EditorWindow;
+                            fullWindow.Show();
+                        }
+                    }
+
                     fullWindow.position = new Rect(fullWindowPosition, fullWindowSize);
                     fullWindow.titleContent = titleContent;
                 }
@@ -54,6 +65,16 @@ namespace QuickSwitch
             }
 
             return fullWindow;
+        }
+
+        static bool CheckInspectorIsLocked(EditorWindow fullWindow)
+        {
+            Type InspectorWindowType = Type.GetType("UnityEditor.InspectorWindow, UnityEditor");
+            if (fullWindow.GetType() != InspectorWindowType)
+                return false;
+            MethodInfo isLockedMethod = InspectorWindowType.GetProperty("isLocked", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).GetGetMethod(true);
+            bool isLocked = (bool)isLockedMethod.Invoke(fullWindow, null);
+            return isLocked;
         }
 
         void OnFullWindowCreated(EditorWindow fullWindow)
@@ -108,9 +129,11 @@ namespace QuickSwitch
                 return;
             }
 
-            if (QuickSwitch.auto_inspector && Selection.activeGameObject != null && currentWindow.titleContent.text == "Inspector")
+            if ( currentWindow.GetType().ToString().StartsWith("UnityEditor.InspectorWindow")) //currentWindow.titleContent.text == "Inspector")
             {
-                return;
+                //Debug.LogWarning("Inspector type = "+ WindowTypeName);
+                if ( (QuickSwitch.auto_inspector && Selection.activeGameObject != null) || CheckInspectorIsLocked(currentWindow))
+                    return;
             }
 
             var minimizedWindow = ScriptableObject.CreateInstance<MinimizedWindow>();

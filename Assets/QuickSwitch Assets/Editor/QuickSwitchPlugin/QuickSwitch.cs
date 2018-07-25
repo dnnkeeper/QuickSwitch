@@ -92,7 +92,18 @@ namespace QuickSwitch
                 else
                 {
                     if (inspectorWindow != null && !CheckIsDocked(inspectorWindow))
-                        MinimizedWindow.MinimizeWindow(inspectorWindow);
+                    {
+                        MethodInfo isLockedMethod = inspectorWindow.GetType().GetProperty("isLocked", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).GetGetMethod(true);
+
+                        bool isLocked = (bool)isLockedMethod.Invoke(inspectorWindow, null);
+
+                        if (isLocked)
+                        {
+                            //Debug.LogWarning("locked inspector does not minimize");
+                        }
+                        else
+                            MinimizedWindow.MinimizeWindow(inspectorWindow);
+                    }
                 }
             }
 
@@ -181,8 +192,18 @@ namespace QuickSwitch
                 //Debug.Log(window.titleContent.text + " already registered");
             }
 
-            if (window.titleContent.text == "Inspector")
+            var typeName = (window as MinimizedWindow).windowTypeName;
+
+            if (typeName != null && typeName.StartsWith("UnityEditor.InspectorWindow"))
             {
+                //Debug.Log("Inspector minimized registered");
+
+                /*var props = Type.GetType(typeName).GetProperties();
+                foreach(var prop in props)
+                {
+                    Debug.Log(prop);
+                }*/
+
                 inspectorWindowMinimized = window as MinimizedWindow;
             }
         }
