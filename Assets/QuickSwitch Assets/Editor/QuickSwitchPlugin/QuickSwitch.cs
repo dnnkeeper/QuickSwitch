@@ -84,7 +84,10 @@ namespace QuickSwitch
                 if (activeObject != null)
                 {
                     if (inspectorWindowMinimized != null)
+                    {
                         inspectorWindowMinimized.RestoreWindow();
+                        EditorWindow.FocusWindowIfItsOpen(focusedWindow.GetType());
+                    }
                 }
                 else
                 {
