@@ -6,12 +6,22 @@ namespace QuickSwitch
 
     public class HandlerWindow : PopupWindow
     {
-
         //public Vector2 pos;
         //public Vector2 size;
 
+        GUISkin skin;
+
         private void OnEnable()
         {
+            skin = ScriptableObject.CreateInstance<GUISkin>();
+
+            var style = new GUIStyle();
+
+            style.alignment = TextAnchor.MiddleCenter;
+
+            style.margin = new RectOffset(3, 3, 3, 3);
+
+            skin.button = style;
             //AssemblyReloadEvents.beforeAssemblyReload += beforeAssemblyReload;
             AssemblyReloadEvents.afterAssemblyReload += afterAssemblyReload;
             //position = new Rect(pos, size);
@@ -48,15 +58,48 @@ namespace QuickSwitch
 
         public bool vertical;
 
+        bool drag;
+
+        bool click;
+
         public override void OnGUI()
         {
             base.OnGUI();
 
-            if ( GUILayout.Button(vertical? "⁞" : "…", GUILayout.MinHeight(20), GUILayout.MinWidth(20)))
+            GUILayout.BeginHorizontal();
+
+            GUI.skin = skin;
+
+            //GUILayout.Label("⋮⋮⋮", GUILayout.MinHeight(20));
+
+            var e = Event.current;
+
+            if (e.button == 0 && e.type == EventType.MouseDown)
+            {
+                drag = false;
+                click = true;
+            }
+            else if (e.type == EventType.MouseDrag)
+            {
+                drag = true;
+                click = false;
+            }
+
+            if (e.button == 0 && e.type == EventType.MouseUp && click)
             {
                 vertical = !vertical;
+
                 QuickSwitch.Resort();
             }
+
+            if (GUILayout.Button(vertical ? "⋮" : "∙∙∙", GUILayout.MinHeight(20), GUILayout.MinWidth(20)))
+            {
+               
+            }
+
+            GUILayout.EndHorizontal();
+
+            GUI.skin = null;
 
             //pos = position.position;
             //size = position.size;

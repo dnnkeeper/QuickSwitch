@@ -26,6 +26,7 @@ namespace QuickSwitch
 
         static int tabWidth = 100;
         static int tabHeight = 26;
+        static int handleWidth = 30;
 
         public static int MinimizedWindowsCount
         {
@@ -54,7 +55,7 @@ namespace QuickSwitch
                 {
                     //Debug.Log("handlerWindow created");
                     handlerWindow = ScriptableObject.CreateInstance<HandlerWindow>();
-                    var handlerRect = new Rect(panelPos, new Vector2(tabHeight+4, tabHeight));
+                    var handlerRect = new Rect(panelPos, new Vector2(handleWidth, tabHeight));
                     handlerWindow.minSize = handlerRect.size;
                     handlerWindow.position = handlerRect;
                     handlerWindow.ShowPopup();
@@ -127,8 +128,8 @@ namespace QuickSwitch
                     //new Rect(Screen.currentResolution.width - width, Screen.currentResolution.height - height / 2 - 100 - i * (height), width, height);
                     Rect r =
                         (handlerWindow == null || handlerWindow.vertical) ?
-                        new Rect(panelPos.x + tabHeight+4 - tabWidth, panelPos.y + tabHeight + i * tabHeight, tabWidth, tabHeight) :
-                        new Rect(panelPos.x + tabHeight+4 + tabWidth * i, panelPos.y, tabWidth, tabHeight);
+                        new Rect(panelPos.x + handleWidth - tabWidth, panelPos.y + tabHeight + i * tabHeight, tabWidth, tabHeight) :
+                        new Rect(panelPos.x + handleWidth + tabWidth * i, panelPos.y, tabWidth, tabHeight);
 
                     if (w.position.position != r.position)
                     {
