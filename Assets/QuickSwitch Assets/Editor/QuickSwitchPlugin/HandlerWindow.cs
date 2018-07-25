@@ -15,19 +15,19 @@ namespace QuickSwitch
             //AssemblyReloadEvents.beforeAssemblyReload += beforeAssemblyReload;
             AssemblyReloadEvents.afterAssemblyReload += afterAssemblyReload;
             //position = new Rect(pos, size);
-            QuickSwitch.HandlerWindow = this;
+            QuickSwitch.handlerWindow = this;
             //Debug.Log("Set Handler Window");
         }
 
         private void afterAssemblyReload()
         {
-            if (QuickSwitch.HandlerWindow == null)
+            if (QuickSwitch.handlerWindow == null)
             {
-                QuickSwitch.HandlerWindow = this;
+                QuickSwitch.handlerWindow = this;
             }
             else
             {
-                if (QuickSwitch.HandlerWindow != this)
+                if (QuickSwitch.handlerWindow != this)
                 {
                     Debug.Log("Handler already exist. Close()");
                     Close();
@@ -37,8 +37,8 @@ namespace QuickSwitch
 
         private void OnDisable()
         {
-            if (QuickSwitch.HandlerWindow == this)
-                QuickSwitch.HandlerWindow = null;
+            if (QuickSwitch.handlerWindow == this)
+                QuickSwitch.handlerWindow = null;
         }
 
         /*private void beforeAssemblyReload()
@@ -46,9 +46,18 @@ namespace QuickSwitch
             Close(); 
         }*/
 
+        public bool vertical;
+
         public override void OnGUI()
         {
             base.OnGUI();
+
+            if ( GUILayout.Button(vertical? "⁞" : "…", GUILayout.MinHeight(20), GUILayout.MinWidth(20)))
+            {
+                vertical = !vertical;
+                QuickSwitch.Resort();
+            }
+
             //pos = position.position;
             //size = position.size;
             //QuickSwitch.panelPos = position.position;

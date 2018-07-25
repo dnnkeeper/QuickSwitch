@@ -12,6 +12,8 @@ namespace QuickSwitch
     {
         public static bool auto_minimize = true;
 
+        public static bool auto_inspector = true;
+
         static EditorWindow focusedWindow;
 
         static GameObject activeObject;
@@ -33,45 +35,48 @@ namespace QuickSwitch
             }
         }
 
-        public static HandlerWindow HandlerWindow;
+        public static HandlerWindow handlerWindow;
 
         static QuickSwitch()
         {
             AssemblyReloadEvents.beforeAssemblyReload += beforeAssemblyReload;
 
             EditorApplication.update += Update;
+
+            panelPos = new Vector2(Screen.currentResolution.width / 2, Screen.currentResolution.height - 100);
         }
 
         static void Update()
         {
             if (minimizedWindows.Count > 0)
             {
-                if (HandlerWindow == null)
+                if (handlerWindow == null)
                 {
                     //Debug.Log("handlerWindow created");
-                    HandlerWindow = ScriptableObject.CreateInstance<HandlerWindow>();
-                    var handlerRect = new Rect(panelPos, new Vector2(tabHeight, tabHeight));
-                    HandlerWindow.minSize = handlerRect.size;
-                    HandlerWindow.position = handlerRect;
-                    HandlerWindow.ShowPopup();
+                    handlerWindow = ScriptableObject.CreateInstance<HandlerWindow>();
+                    var handlerRect = new Rect(panelPos, new Vector2(tabHeight+4, tabHeight));
+                    handlerWindow.minSize = handlerRect.size;
+                    handlerWindow.position = handlerRect;
+                    handlerWindow.ShowPopup();
+                    Resort();
                 }
             }
             else
             {
-                if (HandlerWindow != null)
-                    HandlerWindow.Close();
+                if (handlerWindow != null)
+                    handlerWindow.Close();
             }
 
-            if (HandlerWindow != null)
+            if (handlerWindow != null)
             {
-                if (panelPos != HandlerWindow.position.position && HandlerWindow.position.position != Vector2.zero)
+                if (panelPos != handlerWindow.position.position && handlerWindow.position.position != Vector2.zero)
                 {
-                    panelPos = HandlerWindow.position.position;
+                    panelPos = handlerWindow.position.position;
                     needToResort = true;
                 }
             }
 
-            if (activeObject != Selection.activeGameObject)
+            if (auto_inspector && activeObject != Selection.activeGameObject)
             {
                 activeObject = Selection.activeGameObject;
 
@@ -106,10 +111,10 @@ namespace QuickSwitch
 
             if (needToResort)
             {
-                bool vertical = false;
+                //bool vertical = false;
                 if (panelPos.x + tabWidth * minimizedWindows.Count > Screen.currentResolution.width)
                 {
-                    vertical = true;
+                    handlerWindow.vertical = true;
                 }
 
                 int i = 0;
@@ -121,9 +126,9 @@ namespace QuickSwitch
 
                     //new Rect(Screen.currentResolution.width - width, Screen.currentResolution.height - height / 2 - 100 - i * (height), width, height);
                     Rect r =
-                        vertical ?
-                        new Rect(panelPos.x + tabHeight - tabWidth, panelPos.y + tabHeight + i * tabHeight, tabWidth, tabHeight) :
-                        new Rect(panelPos.x + tabHeight + tabWidth * i, panelPos.y, tabWidth, tabHeight);
+                        (handlerWindow == null || handlerWindow.vertical) ?
+                        new Rect(panelPos.x + tabHeight+4 - tabWidth, panelPos.y + tabHeight + i * tabHeight, tabWidth, tabHeight) :
+                        new Rect(panelPos.x + tabHeight+4 + tabWidth * i, panelPos.y, tabWidth, tabHeight);
 
                     if (w.position.position != r.position)
                     {
@@ -150,6 +155,11 @@ namespace QuickSwitch
         public static void OnWindowAdded(EditorWindow window)
         {
             RegisterMinimizedWindow(window);
+        }
+
+        public static void Resort()
+        {
+            needToResort = true;
         }
 
         public static void RegisterMinimizedWindow(EditorWindow window)
@@ -224,27 +234,12 @@ namespace QuickSwitch
             }
         }*/
 
-        [MenuItem("QuickSwitch/Minimize EditorWindow &PGDN")]
-        public static void MinimizeWindowMenu()
-        {
-            var currentWindow = EditorWindow.focusedWindow;
-
-            //if (!CheckIsDocked(currentWindow))
-            //{
-                MinimizedWindow.MinimizeWindow(currentWindow);
-            //}
-            //else
-            //{
-            //    Debug.LogWarning("Can't minimize docked window");
-            //}
-        }
-
-        [MenuItem("QuickSwitch/Dock To SceneView &PGUP")]
+        [MenuItem("Window/QuickSwitch/Dock To QuickSwitch &PGUP")]
         public static void DockWindowMenu()
         {
             var currentWindow = EditorWindow.focusedWindow;
 
-            if ((currentWindow as PopupWindow) != null)
+            if ((currentWindow as PopupWindow) != null || (currentWindow as QuickSwitchWindow) != null)
             {
                 Debug.LogWarning(currentWindow.titleContent.text + " PopupWindow can't be docked");
                 return;
@@ -258,6 +253,22 @@ namespace QuickSwitch
 
             window = (EditorWindow)GetWindowNextToMethodInfo.Invoke(null, new object[] { new Type[] { typeof(QuickSwitchWindow) } });
         }
+
+        [MenuItem("Window/QuickSwitch/Minimize EditorWindow &PGDN")]
+        public static void MinimizeWindowMenu()
+        {
+            var currentWindow = EditorWindow.focusedWindow;
+
+            //if (!CheckIsDocked(currentWindow))
+            //{
+            MinimizedWindow.MinimizeWindow(currentWindow);
+            //}
+            //else
+            //{
+            //    Debug.LogWarning("Can't minimize docked window");
+            //}
+        }
+
 
         static MethodInfo Make_GetWindowNextTo_Method(Type currentWindowType)
         {

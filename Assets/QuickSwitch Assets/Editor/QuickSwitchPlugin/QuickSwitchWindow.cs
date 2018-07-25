@@ -7,7 +7,7 @@ namespace QuickSwitch
     {
         //static QuickSwitchWindow thisWindow;
 
-        [MenuItem("QuickSwitch/Settings")]
+        [MenuItem("Window/QuickSwitch/Settings")]
         public static void Init()
         {
             GetWindow<QuickSwitchWindow>("QuickSwitch");
@@ -15,24 +15,30 @@ namespace QuickSwitch
 
         void OnGUI()
         {
+            GUILayout.BeginHorizontal();
+
             QuickSwitch.auto_minimize = GUILayout.Toggle(QuickSwitch.auto_minimize, "Auto minimize");
 
-            GUILayout.Label("count: " + QuickSwitch.MinimizedWindowsCount);
+            QuickSwitch.auto_inspector = GUILayout.Toggle(QuickSwitch.auto_inspector, "Inspector auto-expand");
 
-            GUILayout.Label("activeGameObject: " + Selection.activeGameObject);
+            GUILayout.EndHorizontal();
 
-            GUILayout.Label("inspectorWindow: " + ((QuickSwitch.inspectorWindowMinimized != null) ? "Yes" : "No"));
+            //GUILayout.Label("count: " + QuickSwitch.MinimizedWindowsCount);
 
-            GUILayout.Space(20);
+            //GUILayout.Label("activeGameObject: " + Selection.activeGameObject);
 
-            if (EditorWindow.focusedWindow != null)
-                GUILayout.Label("Focused: " + EditorWindow.focusedWindow.ToString());
+            //GUILayout.Label("inspectorWindow: " + ((QuickSwitch.inspectorWindowMinimized != null) ? "Yes" : "No"));
 
-            GUILayout.Space(20);
+            //GUILayout.Space(20);
 
-            if (QuickSwitch.HandlerWindow != null && GUILayout.Button("Reset Handler"))
+            //if (EditorWindow.focusedWindow != null)
+            //    GUILayout.Label("Focused: " + EditorWindow.focusedWindow.ToString());
+
+            //GUILayout.Space(20);
+
+            if (QuickSwitch.handlerWindow != null && GUILayout.Button("Reset Handler"))
             {
-                QuickSwitch.HandlerWindow.position = new Rect(Vector2.zero, QuickSwitch.HandlerWindow.position.size);
+                QuickSwitch.handlerWindow.position = new Rect(Vector2.zero, QuickSwitch.handlerWindow.position.size);
             }
         }
     }
