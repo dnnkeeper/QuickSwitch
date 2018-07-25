@@ -113,7 +113,7 @@ namespace QuickSwitch
             if (needToResort)
             {
                 //bool vertical = false;
-                if (panelPos.x + tabWidth * minimizedWindows.Count > Screen.currentResolution.width)
+                if (handlerWindow != null && panelPos.x + tabWidth * minimizedWindows.Count > Screen.currentResolution.width)
                 {
                     handlerWindow.vertical = true;
                 }
