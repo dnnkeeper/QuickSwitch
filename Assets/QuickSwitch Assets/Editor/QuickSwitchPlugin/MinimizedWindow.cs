@@ -108,7 +108,7 @@ namespace QuickSwitch
                 return;
             }
 
-            if (Selection.activeGameObject != null && currentWindow.titleContent.text == "Inspector")
+            if (QuickSwitch.auto_inspector && Selection.activeGameObject != null && currentWindow.titleContent.text == "Inspector")
             {
                 return;
             }
