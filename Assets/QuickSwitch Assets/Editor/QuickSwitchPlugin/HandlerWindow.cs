@@ -58,7 +58,7 @@ namespace QuickSwitch
 
         public bool vertical;
 
-        bool drag;
+        //bool drag;
 
         bool click;
 
@@ -76,12 +76,12 @@ namespace QuickSwitch
 
             if (e.button == 0 && e.type == EventType.MouseDown)
             {
-                drag = false;
+                //drag = false;
                 click = true;
             }
             else if (e.type == EventType.MouseDrag)
             {
-                drag = true;
+                //drag = true;
                 click = false;
             }
 
