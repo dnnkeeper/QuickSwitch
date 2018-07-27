@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -9,6 +10,8 @@ namespace QuickSwitch
 
     public class MinimizedWindow : PopupWindow
     {
+        [NonSerialized]
+        protected bool initialized;
 
         public Vector2 fullWindowPosition;
 
@@ -16,9 +19,35 @@ namespace QuickSwitch
 
         public string windowTypeName;
 
+        EditorWindow fullWindow;
+
+        static List<EditorWindow> excludedWindows = new List<EditorWindow>();
+
         public override void OnGUI()
         {
             base.OnGUI();
+
+            var e = Event.current;
+
+            if (e.type == EventType.DragExited)
+            {
+                if (fullWindow != null)
+                {
+                    //Debug.LogWarning(titleContent.text + " DragExited Close: fullWindow = " + fullWindow);
+                    Close();
+                }
+                else
+                {
+                    //Debug.LogWarning(titleContent.text + " DragExited, don't close: fullWindow == null");
+                }
+            }
+
+            if (fullWindow != null && DragAndDrop.objectReferences.Length == 0)
+            {
+                //Debug.Log("fullWindow != null && DragAndDrop.objectReferences.Length == 0");
+
+                Close();
+            }
 
             if (GUILayout.Button(titleContent, GUILayout.MinHeight(20), GUILayout.MinWidth(92), GUILayout.MaxWidth(92)))
             {
@@ -28,40 +57,56 @@ namespace QuickSwitch
             if (windowTypeName == null)
             {
                 //Debug.Log("windowTypeName was null");
+
                 Close();
             }
         }
 
         public EditorWindow RestoreWindow()
         {
-            EditorWindow fullWindow = null;
-            if (windowTypeName != null)
+            if (fullWindow == null)
             {
-                Type windowType = Type.GetType(windowTypeName); //+", UnityEditor" 
-
-                //Debug.Log("RestoreWindow '" + windowTypeName + "' type: " + windowType);
-
-                if (windowType != null)
+                if (windowTypeName != null)
                 {
-                    fullWindow = EditorWindow.GetWindow(windowType);
+                    Type windowType = Type.GetType(windowTypeName);
 
-                    if (fullWindow.GetType().ToString().StartsWith("UnityEditor.InspectorWindow"))
+                    //Debug.Log("RestoreWindow '" + windowTypeName + "' type: " + windowType);
+
+                    if (windowType != null)
                     {
-                        if (CheckInspectorIsLocked(fullWindow))
+                        fullWindow = EditorWindow.GetWindow(windowType);
+
+                        if (fullWindow.GetType().ToString().StartsWith("UnityEditor.InspectorWindow"))
                         {
-                            //Debug.LogWarning("locked inspector - create a new one!");
-                            fullWindow = ScriptableObject.CreateInstance(Type.GetType("UnityEditor.InspectorWindow, UnityEditor")) as EditorWindow;
-                            fullWindow.Show();
+                            if (CheckInspectorIsLocked(fullWindow))
+                            {
+                                //Debug.LogWarning("locked inspector - create a new one!");
+
+                                fullWindow = ScriptableObject.CreateInstance(Type.GetType("UnityEditor.InspectorWindow, UnityEditor")) as EditorWindow;
+
+                                fullWindow.Show();
+                            }
                         }
+                       
+                        fullWindow.position = new Rect(fullWindowPosition, fullWindowSize);
+                        fullWindow.titleContent = titleContent;
                     }
 
-                    fullWindow.position = new Rect(fullWindowPosition, fullWindowSize);
-                    fullWindow.titleContent = titleContent;
+                    /*if ( DragAndDrop.objectReferences.Length != 0)
+                    {
+                        Debug.Log("Excluded window "+fullWindow);
+                        excludedWindows.Add(fullWindow);
+                    }
+                    else
+                    {
+                        excludedWindows.Clear();
+                    }*/
+
+                    OnFullWindowCreated(fullWindow);
+
+                    if (DragAndDrop.objectReferences.Length == 0)
+                        Close();
                 }
-
-                OnFullWindowCreated(fullWindow);
-
-                Close();
             }
 
             return fullWindow;
@@ -100,6 +145,17 @@ namespace QuickSwitch
                 return;
             }
 
+            if (excludedWindows.Contains(currentWindow))
+            {
+                Debug.LogWarning(currentWindow.titleContent.text + " is excluded from minimization");
+                return;
+            }
+
+            if (DragAndDrop.objectReferences.Length != 0)
+            {
+                return;
+            }
+            
             string WindowTypeName = currentWindow.GetType().ToString();
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -116,11 +172,6 @@ namespace QuickSwitch
             }
 
             WindowTypeName = WindowTypeName + ", " + assemblyName;
-            /*
-            if (WindowTypeName.Split('.').Length > 1)
-            {
-                WindowTypeName = WindowTypeName + ", " + WindowTypeName.Substring(0, WindowTypeName.LastIndexOf('.'));
-            }*/
 
             if (Type.GetType(WindowTypeName) == null)
             {
@@ -174,9 +225,6 @@ namespace QuickSwitch
             Close();
         }
 
-        [NonSerialized]
-        bool initialized;
-
         private void OnFocus()
         {
             if (initialized)
@@ -184,7 +232,26 @@ namespace QuickSwitch
                 RestoreWindow();
             }
         }
-        
+
+        private void OnLostFocus()
+        {
+
+            if (fullWindow != null)
+            {
+                //Debug.LogWarning("OnLostFocus don't close - no full window");
+                return;
+            }
+            else if (DragAndDrop.objectReferences.Length != 0)
+            {
+                //Debug.Log("OnLostFocus don't close - Drag");
+            }
+            else
+            {
+                //Debug.LogWarning("OnLostFocus Close");
+                Close();
+            }
+        }
+
         private void OnEnable()
         {
             //Debug.Log(titleContent.text+" OnEnable");
