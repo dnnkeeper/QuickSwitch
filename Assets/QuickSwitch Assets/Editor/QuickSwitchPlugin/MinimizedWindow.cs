@@ -249,7 +249,7 @@ namespace QuickSwitch
             {
                 if (initialized)
                 {
-                    Debug.LogWarning("OnLostFocus Close");
+                    //Debug.LogWarning("OnLostFocus Close");
                     Close();
                 }
             }
