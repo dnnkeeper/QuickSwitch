@@ -40,8 +40,6 @@ namespace QuickSwitch
 
         static QuickSwitch()
         {
-            AssemblyReloadEvents.beforeAssemblyReload += beforeAssemblyReload;
-
             EditorApplication.update += Update;
 
             panelPos = new Vector2(Screen.currentResolution.width / 2, Screen.currentResolution.height - 100);
@@ -53,7 +51,7 @@ namespace QuickSwitch
             {
                 if (handlerWindow == null)
                 {
-                    //Debug.Log("handlerWindow created");
+                    //Debug.Log("handlerWindow created"); 
                     handlerWindow = ScriptableObject.CreateInstance<HandlerWindow>();
                     var handlerRect = new Rect(panelPos, new Vector2(handleWidth, tabHeight));
                     handlerWindow.minSize = handlerRect.size;
@@ -198,12 +196,6 @@ namespace QuickSwitch
             {
                 //Debug.Log("Inspector minimized registered");
 
-                /*var props = Type.GetType(typeName).GetProperties();
-                foreach(var prop in props)
-                {
-                    Debug.Log(prop);
-                }*/
-
                 inspectorWindowMinimized = window as MinimizedWindow;
             }
         }
@@ -234,31 +226,6 @@ namespace QuickSwitch
             return (bool)isDockedMethod.Invoke(currentWindow, null);
         }
 
-        private static void beforeAssemblyReload()
-        {
-            //if (handlerWindow != null)
-            //handlerWindow.Close();
-        }
-
-        /*private static void OnSceneGUI(SceneView sceneView)
-        {
-            // Do your general-purpose scene gui stuff here...
-            // Applies to all scene views regardless of selection!
-
-            // You'll need a control id to avoid messing with other tools!
-            int controlID = GUIUtility.GetControlID(FocusType.Passive);
-
-            if (Event.current.GetTypeForControl(controlID) == EventType.KeyDown)
-            {
-                if (Event.current.keyCode == KeyCode.Keypad1)
-                {
-                    Debug.Log("1 pressed!");
-                    // Causes repaint & accepts event has been handled
-                    Event.current.Use();
-                }
-            }
-        }*/
-
         [MenuItem("Window/QuickSwitch/Dock To QuickSwitch &PGUP")]
         public static void DockWindowMenu()
         {
@@ -284,16 +251,8 @@ namespace QuickSwitch
         {
             var currentWindow = EditorWindow.focusedWindow;
 
-            //if (!CheckIsDocked(currentWindow))
-            //{
             MinimizedWindow.MinimizeWindow(currentWindow);
-            //}
-            //else
-            //{
-            //    Debug.LogWarning("Can't minimize docked window");
-            //}
         }
-
 
         static MethodInfo Make_GetWindowNextTo_Method(Type currentWindowType)
         {

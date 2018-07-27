@@ -247,8 +247,11 @@ namespace QuickSwitch
             }
             else
             {
-                //Debug.LogWarning("OnLostFocus Close");
-                Close();
+                if (initialized)
+                {
+                    Debug.LogWarning("OnLostFocus Close");
+                    Close();
+                }
             }
         }
 
