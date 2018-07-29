@@ -64,7 +64,20 @@ namespace QuickSwitch
         {
             EditorApplication.update += Update;
 
-            panelPos = new Vector2(Screen.currentResolution.width / 2, Screen.currentResolution.height - 100);
+            ResetPanelPos();
+        }
+
+        public static void ResetPanelPos()
+        {
+            panelPos = new Vector2(Screen.currentResolution.width - 45, Screen.currentResolution.height/2);
+
+            if (handlerWindow != null)
+            {
+                handlerWindow.vertical = true;
+                handlerWindow.position = new Rect(panelPos, handlerWindow.position.size);
+            }
+            
+            Resort();
         }
 
         static void Update()
@@ -97,7 +110,7 @@ namespace QuickSwitch
                 }
             }
 
-            string newActiveObjectName = (Selection.activeGameObject != null ? Selection.activeGameObject.ToString() : "");
+            string newActiveObjectName = (Selection.activeObject != null ? Selection.activeObject.ToString() : "");
 
             if (Auto_inspector && activeObjectName != newActiveObjectName)
             {

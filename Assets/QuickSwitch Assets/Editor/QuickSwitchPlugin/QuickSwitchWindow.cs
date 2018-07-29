@@ -38,9 +38,9 @@ namespace QuickSwitch
 
             //GUILayout.Space(20);
 
-            if (QuickSwitch.handlerWindow != null && GUILayout.Button("Reset Handler"))
+            if (QuickSwitch.handlerWindow != null && GUILayout.Button("Reset Panel Position"))
             {
-                QuickSwitch.handlerWindow.position = new Rect(Vector2.zero, QuickSwitch.handlerWindow.position.size);
+                QuickSwitch.ResetPanelPos();
             }
         }
     }
