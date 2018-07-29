@@ -4,6 +4,6 @@ QuickSwitch plugin for UnityEditor
 QuickSwitch allows you to minimize any EditorWindow to the floating panel  
 Use **[Alt+PageDown]** to minimize  
 Or use **[Window/QuickSwitch/Settings]** to set up auto-minimization behaviour  
-To restore window click or focus **[Ctrl+Tab]** its minimized tab  
+To restore window click or focus its minimized tab (**[Ctrl+Tab]**)
 ### Screenshot
 ![Screenshot](/img/screenshot.jpg?raw=true "Screenshot")
