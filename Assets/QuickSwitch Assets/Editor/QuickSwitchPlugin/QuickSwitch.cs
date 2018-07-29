@@ -10,13 +10,9 @@ namespace QuickSwitch
     [InitializeOnLoad]
     public class QuickSwitch
     {
-        public static bool auto_minimize = true;
-
-        public static bool auto_inspector = true;
-
         static EditorWindow focusedWindow;
 
-        static GameObject activeObject;
+        static String activeObjectName;
 
         static HashSet<EditorWindow> minimizedWindows = new HashSet<EditorWindow>();
 
@@ -33,6 +29,32 @@ namespace QuickSwitch
             get
             {
                 return minimizedWindows.Count;
+            }
+        }
+
+        public static bool Auto_minimize
+        {
+            get
+            {
+                return EditorPrefs.GetBool("QuickSwitch.auto_minimize");
+            }
+
+            set
+            {
+                EditorPrefs.SetBool("QuickSwitch.auto_minimize", value);
+            }
+        }
+
+        public static bool Auto_inspector
+        {
+            get
+            {
+                return EditorPrefs.GetBool("QuickSwitch.auto_inspector");
+            }
+
+            set
+            {
+                EditorPrefs.SetBool("QuickSwitch.auto_inspector", value);
             }
         }
 
@@ -75,20 +97,25 @@ namespace QuickSwitch
                 }
             }
 
-            if (auto_inspector && activeObject != Selection.activeGameObject)
-            {
-                activeObject = Selection.activeGameObject;
+            string newActiveObjectName = (Selection.activeGameObject != null ? Selection.activeGameObject.ToString() : "");
 
-                if (activeObject != null)
+            if (Auto_inspector && activeObjectName != newActiveObjectName)
+            {
+                activeObjectName = newActiveObjectName;
+
+                if (!String.IsNullOrEmpty(activeObjectName))
                 {
+                    //Debug.Log("activeObject: " + activeObjectName); 
                     if (inspectorWindowMinimized != null)
                     {
                         inspectorWindowMinimized.RestoreWindow();
-                        EditorWindow.FocusWindowIfItsOpen(focusedWindow.GetType());
+                        if (focusedWindow != null)
+                            EditorWindow.FocusWindowIfItsOpen(focusedWindow.GetType());
                     }
                 }
                 else
                 {
+                    //Debug.Log("activeObject: null");
                     if (inspectorWindow != null && !CheckIsDocked(inspectorWindow))
                     {
                         MethodInfo isLockedMethod = inspectorWindow.GetType().GetProperty("isLocked", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).GetGetMethod(true);
@@ -100,12 +127,15 @@ namespace QuickSwitch
                             //Debug.LogWarning("locked inspector does not minimize");
                         }
                         else
+                        {
+                            //Debug.Log("Minimize Inspector");
                             MinimizedWindow.MinimizeWindow(inspectorWindow);
+                        }
                     }
                 }
             }
 
-            if (auto_minimize && focusedWindow != EditorWindow.focusedWindow)
+            if (Auto_minimize && focusedWindow != EditorWindow.focusedWindow)
             {
                 if (EditorWindow.focusedWindow != null)
                 {
@@ -202,7 +232,7 @@ namespace QuickSwitch
 
         public static void OnWindowClosed(EditorWindow window)
         {
-            //Debug.Log(window.titleContent.text + " removed"); 
+            //Debug.Log(window.titleContent.text + " removed");
 
             if (minimizedWindows.Contains(window))
                 minimizedWindows.Remove(window);

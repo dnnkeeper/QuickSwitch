@@ -104,7 +104,7 @@ namespace QuickSwitch
 
                     OnFullWindowCreated(fullWindow);
 
-                    if (DragAndDrop.objectReferences.Length == 0)
+                    //if (DragAndDrop.objectReferences.Length == 0)
                         Close();
                 }
             }
@@ -183,7 +183,7 @@ namespace QuickSwitch
             if ( currentWindow.GetType().ToString().StartsWith("UnityEditor.InspectorWindow")) //currentWindow.titleContent.text == "Inspector")
             {
                 //Debug.LogWarning("Inspector type = "+ WindowTypeName);
-                if ( (QuickSwitch.auto_inspector && Selection.activeGameObject != null) || CheckInspectorIsLocked(currentWindow))
+                if ( (QuickSwitch.Auto_inspector && Selection.activeGameObject != null) || CheckInspectorIsLocked(currentWindow))
                     return;
             }
 

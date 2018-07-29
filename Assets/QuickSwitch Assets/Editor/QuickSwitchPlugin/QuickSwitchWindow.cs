@@ -17,11 +17,13 @@ namespace QuickSwitch
         {
             GUILayout.BeginHorizontal();
 
-            QuickSwitch.auto_minimize = GUILayout.Toggle(QuickSwitch.auto_minimize, "Auto minimize");
+            QuickSwitch.Auto_minimize = GUILayout.Toggle(QuickSwitch.Auto_minimize, "Auto minimize");
 
-            QuickSwitch.auto_inspector = GUILayout.Toggle(QuickSwitch.auto_inspector, "Inspector auto-expand");
+            QuickSwitch.Auto_inspector = GUILayout.Toggle(QuickSwitch.Auto_inspector, "Inspector auto-expand");
 
             GUILayout.EndHorizontal();
+
+            //GUILayout.Label("activeObject: " + QuickSwitch.activeObjectName);
 
             //GUILayout.Label("count: " + QuickSwitch.MinimizedWindowsCount);
 
