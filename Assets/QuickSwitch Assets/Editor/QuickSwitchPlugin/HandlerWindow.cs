@@ -14,6 +14,23 @@ namespace QuickSwitch
 
         private void OnEnable()
         {
+            if (QuickSwitch.handlerWindow == null)
+            {
+                //Debug.Log("QuickSwitch.handlerWindow = "+this); 
+                QuickSwitch.handlerWindow = this;
+            }
+            else
+            {
+                if (QuickSwitch.handlerWindow != this)
+                {
+                    Debug.Log("Handler already exist. Close()");
+                    Close();
+                    return;
+                }
+            }
+
+            //Debug.Log("Handler OnEnable");
+
             skin = ScriptableObject.CreateInstance<GUISkin>();
 
             var style = new GUIStyle();
@@ -23,33 +40,32 @@ namespace QuickSwitch
             style.margin = new RectOffset(3, 3, 3, 3);
 
             skin.button = style;
-            //AssemblyReloadEvents.beforeAssemblyReload += beforeAssemblyReload;
+
             AssemblyReloadEvents.afterAssemblyReload += afterAssemblyReload;
-            //position = new Rect(pos, size);
-            QuickSwitch.handlerWindow = this;
-            //Debug.Log("Set Handler Window");
         }
 
         private void afterAssemblyReload()
         {
-            if (QuickSwitch.handlerWindow == null)
-            {
-                QuickSwitch.handlerWindow = this;
-            }
-            else
-            {
-                if (QuickSwitch.handlerWindow != this)
-                {
-                    Debug.Log("Handler already exist. Close()");
-                    Close();
-                }
-            }
+            QuickSwitch.panelPos = position.position;
+
+            //It is needed to re-create EditorWindow to keep it after Editor restarts
+            Close();
         }
 
         private void OnDisable()
         {
             if (QuickSwitch.handlerWindow == this)
                 QuickSwitch.handlerWindow = null;
+        }
+
+        public static HandlerWindow Create(Vector2 panelPos, Vector2 handlerSize)
+        {
+            HandlerWindow handlerWindow = ScriptableObject.CreateInstance<HandlerWindow>();
+            var handlerRect = new Rect(panelPos, handlerSize);
+            handlerWindow.minSize = handlerRect.size;
+            handlerWindow.position = handlerRect;
+            handlerWindow.ShowPopup();
+            return handlerWindow;
         }
 
         /*private void beforeAssemblyReload()

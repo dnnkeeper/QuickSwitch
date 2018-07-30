@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace QuickSwitch
@@ -6,6 +7,10 @@ namespace QuickSwitch
     public class QuickSwitchWindow : EditorWindow
     {
         //static QuickSwitchWindow thisWindow;
+
+        //public List<MinimizedWindow> minimizedWindows = new List<MinimizedWindow>();
+
+        //public bool test;
 
         [MenuItem("Window/QuickSwitch/Settings")]
         public static void Init()
@@ -21,7 +26,16 @@ namespace QuickSwitch
 
             QuickSwitch.Auto_inspector = GUILayout.Toggle(QuickSwitch.Auto_inspector, "Inspector auto-expand");
 
+            //test = GUILayout.Toggle(test, "TestBool");
+
             GUILayout.EndHorizontal();
+
+            GUILayout.Label("Minimized:");
+
+            /*foreach(var min in minimizedWindows)
+            {
+                GUILayout.Label(min.titleContent.text);
+            }*/
 
             //GUILayout.Label("activeObject: " + QuickSwitch.activeObjectName);
 

@@ -64,12 +64,13 @@ namespace QuickSwitch
         {
             EditorApplication.update += Update;
 
-            ResetPanelPos();
+            ResetPanelPos(false);
         }
 
-        public static void ResetPanelPos()
+        public static void ResetPanelPos(bool force = true)
         {
-            panelPos = new Vector2(Screen.currentResolution.width - 45, Screen.currentResolution.height/2);
+            if (force || handlerWindow == null || handlerWindow.position.position == Vector2.zero)
+                panelPos = new Vector2(Screen.currentResolution.width - 45, Screen.currentResolution.height/2);
 
             if (handlerWindow != null)
             {
@@ -122,19 +123,18 @@ namespace QuickSwitch
             {
                 if (handlerWindow == null)
                 {
-                    //Debug.Log("handlerWindow created"); 
-                    handlerWindow = ScriptableObject.CreateInstance<HandlerWindow>();
-                    var handlerRect = new Rect(panelPos, new Vector2(handleWidth, tabHeight));
-                    handlerWindow.minSize = handlerRect.size;
-                    handlerWindow.position = handlerRect;
-                    handlerWindow.ShowPopup();
+                    //Debug.Log("handlerWindow created at "+ panelPos); 
+                    handlerWindow = HandlerWindow.Create(panelPos, new Vector2(handleWidth, tabHeight));
                     Resort();
                 }
             }
             else
             {
                 if (handlerWindow != null)
+                {
+                    //Debug.Log("No minimizedWindows. Close handler");
                     handlerWindow.Close();
+                }
             }
 
             if (handlerWindow != null)

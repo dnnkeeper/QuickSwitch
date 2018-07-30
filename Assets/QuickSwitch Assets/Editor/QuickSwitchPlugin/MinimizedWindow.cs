@@ -10,8 +10,20 @@ namespace QuickSwitch
 
     public class MinimizedWindow : PopupWindow
     {
-        [NonSerialized]
-        protected bool initialized;
+
+        private bool _initialized;
+        
+        protected bool initialized
+        {
+            get { return _initialized;  }
+            set {
+                _initialized = value;
+                if (value)
+                {
+                    OnInitialized();
+                }
+            }
+        }
 
         public Vector2 fullWindowPosition;
 
@@ -33,7 +45,7 @@ namespace QuickSwitch
             {
                 if (fullWindow != null)
                 {
-                    //Debug.LogWarning(titleContent.text + " DragExited Close: fullWindow = " + fullWindow);
+                    //Debug.LogWarning(titleContent.text + " DragExited Close(): fullWindow = " + fullWindow);
                     Close();
                 }
                 else
@@ -44,7 +56,7 @@ namespace QuickSwitch
 
             if (fullWindow != null && !IsDragAndDrop)
             {
-                //Debug.Log("fullWindow != null && DragAndDrop.objectReferences.Length == 0");
+                //Debug.Log("fullWindow != null && !IsDragAndDrop - Close()");
 
                 Close();
             }
@@ -56,7 +68,7 @@ namespace QuickSwitch
 
             if (windowTypeName == null)
             {
-                //Debug.Log("windowTypeName was null");
+                //Debug.Log("windowTypeName was null - close()");
 
                 Close();
             }
@@ -92,20 +104,11 @@ namespace QuickSwitch
                         fullWindow.titleContent = titleContent;
                     }
 
-                    /*if ( DragAndDrop.objectReferences.Length != 0)
-                    {
-                        Debug.Log("Excluded window "+fullWindow);
-                        excludedWindows.Add(fullWindow);
-                    }
-                    else
-                    {
-                        excludedWindows.Clear();
-                    }*/
-
                     OnFullWindowCreated(fullWindow);
 
-                    //if (DragAndDrop.objectReferences.Length == 0)
-                        Close();
+                    //Debug.LogWarning("RestoreWindow. Close()");
+
+                    Close();
                 }
             }
 
@@ -131,23 +134,28 @@ namespace QuickSwitch
             }
         }
 
-        public static void MinimizeWindow(EditorWindow currentWindow)
+        public static void MinimizeWindow(EditorWindow window)
         {
-            if (currentWindow == null)
+            if (window == null)
             {
                 Debug.LogWarning("MinimizeWindow null");
                 return;
             }
 
-            if ((currentWindow as PopupWindow) != null)
+            //if ((currentWindow as QuickSwitchWindow) != null)
+            //{
+                //return;
+            //}
+
+            if ((window as PopupWindow) != null)
             {
-                Debug.LogWarning(currentWindow.titleContent.text + " PopupWindow can't be minimized");
+                Debug.LogWarning(window.titleContent.text + " PopupWindow can't be minimized");
                 return;
             }
 
-            if (excludedWindows.Contains(currentWindow))
+            if (excludedWindows.Contains(window))
             {
-                Debug.LogWarning(currentWindow.titleContent.text + " is excluded from minimization");
+                Debug.LogWarning(window.titleContent.text + " is excluded from minimization");
                 return;
             }
 
@@ -156,7 +164,7 @@ namespace QuickSwitch
                 return;
             }
             
-            string WindowTypeName = currentWindow.GetType().ToString();
+            string WindowTypeName = window.GetType().ToString();
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             string assemblyName = "UnityEditor";
@@ -180,38 +188,46 @@ namespace QuickSwitch
                 return;
             }
 
-            if ( currentWindow.GetType().ToString().StartsWith("UnityEditor.InspectorWindow")) //currentWindow.titleContent.text == "Inspector")
+            if ( window.GetType().ToString().StartsWith("UnityEditor.InspectorWindow")) //currentWindow.titleContent.text == "Inspector")
             {
                 //Debug.LogWarning("Inspector type = "+ WindowTypeName);
-                if ( (QuickSwitch.Auto_inspector && Selection.activeGameObject != null) || CheckInspectorIsLocked(currentWindow))
+                if ( (QuickSwitch.Auto_inspector && Selection.activeGameObject != null) || CheckInspectorIsLocked(window))
                     return;
             }
 
+            var minimized = createMinimizedWindow(window.titleContent, WindowTypeName, window.position);
+
+            window.Close();
+
+            //minimizedWindow.fullWindow = null;
+            //currentWindow.minSize = Vector2.zero;
+            //currentWindow.position = new Rect(new Vector2(Screen.currentResolution.width, Screen.currentResolution.height), Vector2.zero); //currentWindow.position.size
+        }
+
+        static MinimizedWindow createMinimizedWindow(GUIContent titleContent, string WindowTypeName, Rect rect)
+        {
             var minimizedWindow = ScriptableObject.CreateInstance<MinimizedWindow>();
 
             if (minimizedWindow != null)
             {
 
-                minimizedWindow.titleContent = currentWindow.titleContent;
+                minimizedWindow.titleContent = titleContent;
 
                 minimizedWindow.windowTypeName = WindowTypeName;
 
-                minimizedWindow.fullWindowPosition = currentWindow.position.position;
+                minimizedWindow.fullWindowPosition = rect.position;
 
-                minimizedWindow.fullWindowSize = currentWindow.position.size;
+                minimizedWindow.fullWindowSize = rect.size;
 
                 minimizedWindow.ShowPopup();
 
                 minimizedWindow.initialized = true;
 
-                QuickSwitch.RegisterMinimizedWindow(minimizedWindow);
+                //Register it again (after OnEnable) to detect windowTypeName
+                //QuickSwitch.RegisterMinimizedWindow(minimizedWindow);
             }
 
-            currentWindow.Close();
-
-            //minimizedWindow.fullWindow = null;
-            //currentWindow.minSize = Vector2.zero;
-            //currentWindow.position = new Rect(new Vector2(Screen.currentResolution.width, Screen.currentResolution.height), Vector2.zero); //currentWindow.position.size
+            return minimizedWindow;
         }
 
         IEnumerator RestoreWindowRoutine(EditorWindow fullWindow, float t)
@@ -245,7 +261,7 @@ namespace QuickSwitch
                 }
             }
         }
-
+         
         static bool IsDragAndDrop
         {
             get { return DragAndDrop.paths.Length != 0 || DragAndDrop.objectReferences.Length != 0; }
@@ -273,27 +289,43 @@ namespace QuickSwitch
                             titleContent.text = titleContentText;
                     }
                     else
+                    {
+                        //Debug.Log(this+ " OnLostFocus Close()");
                         Close();
+                    }
                 }
             }
         }
 
         private void OnEnable()
         {
-            //Debug.Log(titleContent.text+" OnEnable");
+            //Debug.Log(titleContent.text + " OnEnable");
+
             AssemblyReloadEvents.beforeAssemblyReload += beforeAssemblyReload;
             AssemblyReloadEvents.afterAssemblyReload += afterAssemblyReload;
+
             QuickSwitch.OnWindowAdded(this);
+        }
+
+        void OnInitialized()
+        {
+            QuickSwitch.RegisterMinimizedWindow(this);
         }
 
         private void beforeAssemblyReload()
         {
-            initialized = false;
+            initialized = false; 
         }
 
         private void afterAssemblyReload()
         {
-            initialized = true;
+            //Debug.Log(titleContent.text + " afterAssemblyReload");
+
+            //EditorWindow is being created after UnityEditor restart but after next restart it somehow not creating again. 
+            //So next editor restart leads to minimized tab not being created if it wasn't created via ScriptableObject.CreateInstance.
+            //So we need to force ScriptableObject.CreateInstance again to save this tab.
+            var minimized = createMinimizedWindow(titleContent, windowTypeName, new Rect(fullWindowPosition, fullWindowSize));
+            Close();
         }
 
         private void OnDisable()
