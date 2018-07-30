@@ -10,7 +10,7 @@ namespace QuickSwitch
         //public Vector2 size;
 
         [SerializeField]
-        GUISkin skin;
+        public GUISkin skin;
 
         private void OnEnable()
         {
@@ -29,7 +29,7 @@ namespace QuickSwitch
                 }
             }
 
-            //Debug.Log("Handler OnEnable");
+            Debug.Log("Handler OnEnable");
 
             skin = ScriptableObject.CreateInstance<GUISkin>();
 
@@ -40,6 +40,8 @@ namespace QuickSwitch
             style.margin = new RectOffset(3, 3, 3, 3);
 
             skin.button = style;
+
+            skin.hideFlags = HideFlags.DontSave;
 
             AssemblyReloadEvents.afterAssemblyReload += afterAssemblyReload;
         }
