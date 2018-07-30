@@ -207,9 +207,9 @@ namespace QuickSwitch
                 QuickSwitch.RegisterMinimizedWindow(minimizedWindow);
             }
 
-            //currentWindow.Close();
-            minimizedWindow.fullWindow = null;
-            currentWindow.position = new Rect(new Vector2(Screen.currentResolution.width, Screen.currentResolution.height), currentWindow.position.size);
+            currentWindow.Close();
+            //minimizedWindow.fullWindow = null;
+            //currentWindow.position = new Rect(new Vector2(Screen.currentResolution.width, Screen.currentResolution.height), currentWindow.position.size);
         }
 
         IEnumerator RestoreWindowRoutine(EditorWindow fullWindow, float t)
