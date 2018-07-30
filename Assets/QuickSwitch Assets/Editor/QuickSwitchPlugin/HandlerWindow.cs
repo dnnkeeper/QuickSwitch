@@ -9,6 +9,7 @@ namespace QuickSwitch
         //public Vector2 pos;
         //public Vector2 size;
 
+        [SerializeField]
         GUISkin skin;
 
         private void OnEnable()

@@ -208,8 +208,10 @@ namespace QuickSwitch
             }
 
             currentWindow.Close();
+
             //minimizedWindow.fullWindow = null;
-            //currentWindow.position = new Rect(new Vector2(Screen.currentResolution.width, Screen.currentResolution.height), currentWindow.position.size);
+            //currentWindow.minSize = Vector2.zero;
+            //currentWindow.position = new Rect(new Vector2(Screen.currentResolution.width, Screen.currentResolution.height), Vector2.zero); //currentWindow.position.size
         }
 
         IEnumerator RestoreWindowRoutine(EditorWindow fullWindow, float t)
@@ -227,11 +229,20 @@ namespace QuickSwitch
             Close();
         }
 
+        string titleContentText;
+
         private void OnFocus()
         {
             if (initialized)
             {
-                RestoreWindow();
+                if (!QuickSwitch.ctrl)
+                    RestoreWindow();
+                else
+                {
+                    if (String.IsNullOrEmpty(titleContentText))
+                        titleContentText = titleContent.text;
+                    titleContent.text = "["+titleContent.text+ "]";
+                }
             }
         }
 
@@ -242,7 +253,6 @@ namespace QuickSwitch
 
         private void OnLostFocus()
         {
-
             if (fullWindow != null)
             {
                 //Debug.LogWarning("OnLostFocus don't close - no full window");
@@ -257,7 +267,13 @@ namespace QuickSwitch
                 if (initialized)
                 {
                     //Debug.LogWarning("OnLostFocus Close");
-                    Close();
+                    if (QuickSwitch.ctrl)
+                    {
+                        if (!String.IsNullOrEmpty(titleContentText))
+                            titleContent.text = titleContentText;
+                    }
+                    else
+                        Close();
                 }
             }
         }

@@ -80,6 +80,42 @@ namespace QuickSwitch
             Resort();
         }
 
+        [InitializeOnLoadMethod]
+        static void EditorInit()
+        {
+            FieldInfo info = typeof(EditorApplication).GetField("globalEventHandler", BindingFlags.Static | BindingFlags.NonPublic);
+
+            EditorApplication.CallbackFunction value = (EditorApplication.CallbackFunction)info.GetValue(null);
+
+            value += EditorGlobalKeyPress;
+
+            info.SetValue(null, value);
+        }
+
+        public static bool ctrl;
+
+        static void EditorGlobalKeyPress()
+        {
+            if (Event.current.control)
+            {
+                //Debug.Log("ctrl true");
+                ctrl = true;
+            }
+            else
+            {
+                if (ctrl)
+                {
+                    MinimizedWindow min = EditorWindow.focusedWindow as MinimizedWindow;
+                    if (min != null)
+                    {
+                        min.RestoreWindow();
+                    }
+                    //Debug.Log("ctrl true->false");
+                    ctrl = false;
+                }
+            }
+        }
+
         static void Update()
         {
             if (minimizedWindows.Count > 0)
