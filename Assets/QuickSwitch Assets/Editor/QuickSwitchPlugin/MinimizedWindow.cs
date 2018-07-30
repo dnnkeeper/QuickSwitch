@@ -42,7 +42,7 @@ namespace QuickSwitch
                 }
             }
 
-            if (fullWindow != null && DragAndDrop.objectReferences.Length == 0)
+            if (fullWindow != null && !IsDragAndDrop)
             {
                 //Debug.Log("fullWindow != null && DragAndDrop.objectReferences.Length == 0");
 
@@ -151,7 +151,7 @@ namespace QuickSwitch
                 return;
             }
 
-            if (DragAndDrop.objectReferences.Length != 0)
+            if (IsDragAndDrop)
             {
                 return;
             }
@@ -233,6 +233,11 @@ namespace QuickSwitch
             }
         }
 
+        static bool IsDragAndDrop
+        {
+            get { return DragAndDrop.paths.Length != 0 || DragAndDrop.objectReferences.Length != 0; }
+        }
+
         private void OnLostFocus()
         {
 
@@ -241,7 +246,7 @@ namespace QuickSwitch
                 //Debug.LogWarning("OnLostFocus don't close - no full window");
                 return;
             }
-            else if (DragAndDrop.objectReferences.Length != 0)
+            else if (IsDragAndDrop)
             {
                 //Debug.Log("OnLostFocus don't close - Drag");
             }
