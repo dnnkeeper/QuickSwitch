@@ -4,7 +4,12 @@
 /[Bb]uild/
 /[Bb]uilds/
 
-/Assets/AssetStoreTools*
+/Packages/
+/ProjectSettings/
+/Assets/*
+!/Assets/QuickSwitch Assets/
+
+
 
 # Visual Studio 2015 cache directory
 /.vs/
@@ -34,3 +39,4 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+*.rar
