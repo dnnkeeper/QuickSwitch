@@ -6,11 +6,7 @@ namespace QuickSwitch
 
     public class HandlerWindow : PopupWindow
     {
-        //public Vector2 pos;
-        //public Vector2 size;
-
-        [SerializeField]
-        public GUISkin skin;
+        private GUISkin skin;
 
         private void OnEnable()
         {
@@ -23,13 +19,13 @@ namespace QuickSwitch
             {
                 if (QuickSwitch.handlerWindow != this)
                 {
-                    Debug.Log("Handler already exist. Close()");
+                    Debug.LogWarning("Handler already exist. Close()");
                     Close();
                     return;
                 }
             }
 
-            Debug.Log("Handler OnEnable");
+            //Debug.Log("Handler OnEnable");
 
             skin = ScriptableObject.CreateInstance<GUISkin>();
 
@@ -69,11 +65,6 @@ namespace QuickSwitch
             handlerWindow.ShowPopup();
             return handlerWindow;
         }
-
-        /*private void beforeAssemblyReload()
-        {
-            Close(); 
-        }*/
 
         public bool vertical;
 

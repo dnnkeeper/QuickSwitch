@@ -133,7 +133,7 @@ namespace QuickSwitch
                 if (handlerWindow != null)
                 {
                     //Debug.Log("No minimizedWindows. Close handler");
-                    handlerWindow.Close();
+                    handlerWindow.Close(); 
                 }
             }
 
@@ -167,9 +167,9 @@ namespace QuickSwitch
                     //Debug.Log("activeObject: null");
                     if (inspectorWindow != null && !CheckIsDocked(inspectorWindow))
                     {
-                        MethodInfo isLockedMethod = inspectorWindow.GetType().GetProperty("isLocked", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).GetGetMethod(true);
+                        //MethodInfo isLockedMethod = inspectorWindow.GetType().GetProperty("isLocked", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).GetGetMethod(true);
 
-                        bool isLocked = (bool)isLockedMethod.Invoke(inspectorWindow, null);
+                        bool isLocked = false;//(bool)isLockedMethod.Invoke(inspectorWindow, null);
 
                         if (isLocked)
                         {

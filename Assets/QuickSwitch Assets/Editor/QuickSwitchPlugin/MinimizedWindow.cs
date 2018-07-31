@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -82,11 +81,11 @@ namespace QuickSwitch
                 {
                     Type windowType = Type.GetType(windowTypeName);
 
-                    //Debug.Log("RestoreWindow '" + windowTypeName + "' type: " + windowType);
+                    ///Debug.Log("RestoreWindow '" + windowTypeName + "' type: " + windowType);
 
                     if (windowType != null)
                     {
-                        fullWindow = EditorWindow.GetWindow(windowType);
+                        fullWindow = EditorWindow.GetWindow(windowType); //false, fullWindow.titleContent.text
 
                         if (fullWindow.GetType().ToString().StartsWith("UnityEditor.InspectorWindow"))
                         {
@@ -104,11 +103,14 @@ namespace QuickSwitch
                         fullWindow.titleContent = titleContent;
                     }
 
-                    OnFullWindowCreated(fullWindow);
+                    if (fullWindow != null)
+                    {
+                        OnFullWindowCreated(fullWindow);
 
-                    //Debug.LogWarning("RestoreWindow. Close()");
+                        //Debug.LogWarning("RestoreWindow. Close()");
 
-                    Close();
+                        Close();
+                    }
                 }
             }
 
@@ -118,10 +120,14 @@ namespace QuickSwitch
         static bool CheckInspectorIsLocked(EditorWindow fullWindow)
         {
             Type InspectorWindowType = Type.GetType("UnityEditor.InspectorWindow, UnityEditor");
+
             if (fullWindow.GetType() != InspectorWindowType)
                 return false;
-            MethodInfo isLockedMethod = InspectorWindowType.GetProperty("isLocked", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).GetGetMethod(true);
+
+            System.Reflection.MethodInfo isLockedMethod = InspectorWindowType.GetProperty("isLocked", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetGetMethod(true);
+            
             bool isLocked = (bool)isLockedMethod.Invoke(fullWindow, null);
+
             return isLocked;
         }
 
@@ -269,7 +275,7 @@ namespace QuickSwitch
 
         private void OnLostFocus()
         {
-            if (fullWindow != null)
+            if (fullWindow == null)
             {
                 //Debug.LogWarning("OnLostFocus don't close - no full window");
                 return;
@@ -319,8 +325,6 @@ namespace QuickSwitch
 
         private void afterAssemblyReload()
         {
-            //Debug.Log(titleContent.text + " afterAssemblyReload");
-
             //EditorWindow is being created after UnityEditor restart but after next restart it somehow not creating again. 
             //So next editor restart leads to minimized tab not being created if it wasn't created via ScriptableObject.CreateInstance.
             //So we need to force ScriptableObject.CreateInstance again to save this tab.
