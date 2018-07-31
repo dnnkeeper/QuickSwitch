@@ -21,7 +21,9 @@ namespace QuickSwitch
         public static Vector2 panelPos;
 
         static int tabWidth = 100;
+
         static int tabHeight = 26;
+
         static int handleWidth = 30;
 
         public static int MinimizedWindowsCount
@@ -60,6 +62,10 @@ namespace QuickSwitch
 
         public static HandlerWindow handlerWindow;
 
+        public static MinimizedWindow inspectorWindowMinimized;
+
+        public static EditorWindow inspectorWindow;
+
         static QuickSwitch()
         {
             EditorApplication.update += Update;
@@ -75,6 +81,7 @@ namespace QuickSwitch
             if (handlerWindow != null)
             {
                 handlerWindow.vertical = true;
+
                 handlerWindow.position = new Rect(panelPos, handlerWindow.position.size);
             }
             
@@ -100,6 +107,7 @@ namespace QuickSwitch
             if (Event.current.control)
             {
                 //Debug.Log("ctrl true");
+
                 ctrl = true;
             }
             else
@@ -107,11 +115,14 @@ namespace QuickSwitch
                 if (ctrl)
                 {
                     MinimizedWindow min = EditorWindow.focusedWindow as MinimizedWindow;
+
                     if (min != null)
                     {
                         min.RestoreWindow();
                     }
+
                     //Debug.Log("ctrl true->false");
+
                     ctrl = false;
                 }
             }
@@ -124,7 +135,9 @@ namespace QuickSwitch
                 if (handlerWindow == null)
                 {
                     //Debug.Log("handlerWindow created at "+ panelPos); 
+
                     handlerWindow = HandlerWindow.Create(panelPos, new Vector2(handleWidth, tabHeight));
+
                     Resort();
                 }
             }
@@ -133,6 +146,7 @@ namespace QuickSwitch
                 if (handlerWindow != null)
                 {
                     //Debug.Log("No minimizedWindows. Close handler");
+
                     handlerWindow.Close(); 
                 }
             }
@@ -142,6 +156,7 @@ namespace QuickSwitch
                 if (panelPos != handlerWindow.position.position && handlerWindow.position.position != Vector2.zero)
                 {
                     panelPos = handlerWindow.position.position;
+
                     needToResort = true;
                 }
             }
@@ -155,9 +170,11 @@ namespace QuickSwitch
                 if (!String.IsNullOrEmpty(activeObjectName))
                 {
                     //Debug.Log("activeObject: " + activeObjectName); 
+
                     if (inspectorWindowMinimized != null)
                     {
                         inspectorWindowMinimized.RestoreWindow();
+
                         if (focusedWindow != null)
                             EditorWindow.FocusWindowIfItsOpen(focusedWindow.GetType());
                     }
@@ -167,9 +184,7 @@ namespace QuickSwitch
                     //Debug.Log("activeObject: null");
                     if (inspectorWindow != null && !CheckIsDocked(inspectorWindow))
                     {
-                        //MethodInfo isLockedMethod = inspectorWindow.GetType().GetProperty("isLocked", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static).GetGetMethod(true);
-
-                        bool isLocked = false;//(bool)isLockedMethod.Invoke(inspectorWindow, null);
+                        bool isLocked = CheckInspectorIsLocked(inspectorWindow);
 
                         if (isLocked)
                         {
@@ -178,6 +193,7 @@ namespace QuickSwitch
                         else
                         {
                             //Debug.Log("Minimize Inspector");
+
                             MinimizedWindow.MinimizeWindow(inspectorWindow);
                         }
                     }
@@ -191,6 +207,7 @@ namespace QuickSwitch
                     if (focusedWindow != null)
                     {
                         //Debug.Log("Switch from" + focusedWindow + " to" + EditorWindow.focusedWindow);
+
                         if (!CheckIsDocked(focusedWindow))
                         {
                             MinimizedWindow.MinimizeWindow(focusedWindow);
@@ -203,13 +220,13 @@ namespace QuickSwitch
 
             if (needToResort)
             {
-                //bool vertical = false;
                 if (handlerWindow != null && panelPos.x + tabWidth * minimizedWindows.Count > Screen.currentResolution.width)
                 {
                     handlerWindow.vertical = true;
                 }
 
                 int i = 0;
+
                 foreach (var w in minimizedWindows)
                 {
                     //Debug.Log(w.titleContent.text+" sort "+i);
@@ -237,12 +254,10 @@ namespace QuickSwitch
 
                     i++;
                 }
+
                 needToResort = false;
             }
         }
-
-        public static MinimizedWindow inspectorWindowMinimized;
-        public static EditorWindow inspectorWindow;
 
         public static void OnWindowAdded(EditorWindow window)
         {
@@ -296,6 +311,20 @@ namespace QuickSwitch
             }
         }
 
+        public static bool CheckInspectorIsLocked(EditorWindow fullWindow)
+        {
+            Type InspectorWindowType = Type.GetType("UnityEditor.InspectorWindow, UnityEditor");
+
+            if (fullWindow.GetType() != InspectorWindowType)
+                return false;
+
+            MethodInfo isLockedMethod = InspectorWindowType.GetProperty("isLocked", BindingFlags.Instance | BindingFlags.Public).GetGetMethod(true);
+
+            bool isLocked = (bool)isLockedMethod.Invoke(fullWindow, null);
+
+            return isLocked;
+        }
+
         static bool CheckIsDocked(EditorWindow currentWindow)
         {
             BindingFlags fullBinding = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
@@ -322,6 +351,7 @@ namespace QuickSwitch
             
             window.Close();
 
+            //To dock window next to other we have to call this method second time in case this window was docked
             window = (EditorWindow)GetWindowNextToMethodInfo.Invoke(null, new object[] { new Type[] { typeof(QuickSwitchWindow) } });
         }
 

@@ -9,7 +9,6 @@ namespace QuickSwitch
 
     public class MinimizedWindow : PopupWindow
     {
-
         private bool _initialized;
         
         protected bool initialized
@@ -30,9 +29,12 @@ namespace QuickSwitch
 
         public string windowTypeName;
 
-        EditorWindow fullWindow;
+        protected EditorWindow fullWindow;
 
         static List<EditorWindow> excludedWindows = new List<EditorWindow>();
+
+        [SerializeField]
+        string titleContentText;
 
         public override void OnGUI()
         {
@@ -45,6 +47,7 @@ namespace QuickSwitch
                 if (fullWindow != null)
                 {
                     //Debug.LogWarning(titleContent.text + " DragExited Close(): fullWindow = " + fullWindow);
+
                     Close();
                 }
                 else
@@ -89,7 +92,7 @@ namespace QuickSwitch
 
                         if (fullWindow.GetType().ToString().StartsWith("UnityEditor.InspectorWindow"))
                         {
-                            if (CheckInspectorIsLocked(fullWindow))
+                            if (QuickSwitch.CheckInspectorIsLocked(fullWindow))
                             {
                                 //Debug.LogWarning("locked inspector - create a new one!");
 
@@ -100,6 +103,7 @@ namespace QuickSwitch
                         }
                        
                         fullWindow.position = new Rect(fullWindowPosition, fullWindowSize);
+
                         fullWindow.titleContent = titleContent;
                     }
 
@@ -117,25 +121,12 @@ namespace QuickSwitch
             return fullWindow;
         }
 
-        static bool CheckInspectorIsLocked(EditorWindow fullWindow)
-        {
-            Type InspectorWindowType = Type.GetType("UnityEditor.InspectorWindow, UnityEditor");
-
-            if (fullWindow.GetType() != InspectorWindowType)
-                return false;
-
-            System.Reflection.MethodInfo isLockedMethod = InspectorWindowType.GetProperty("isLocked", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public).GetGetMethod(true);
-            
-            bool isLocked = (bool)isLockedMethod.Invoke(fullWindow, null);
-
-            return isLocked;
-        }
-
         void OnFullWindowCreated(EditorWindow fullWindow)
         {
             if (fullWindow != null && fullWindow.titleContent.text == "Inspector")
             {
                 //Debug.Log("Inspector Full window restored");
+
                 QuickSwitch.inspectorWindow = fullWindow;
             }
         }
@@ -145,6 +136,7 @@ namespace QuickSwitch
             if (window == null)
             {
                 Debug.LogWarning("MinimizeWindow null");
+
                 return;
             }
 
@@ -156,12 +148,14 @@ namespace QuickSwitch
             if ((window as PopupWindow) != null)
             {
                 Debug.LogWarning(window.titleContent.text + " PopupWindow can't be minimized");
+
                 return;
             }
 
             if (excludedWindows.Contains(window))
             {
                 Debug.LogWarning(window.titleContent.text + " is excluded from minimization");
+
                 return;
             }
 
@@ -173,14 +167,19 @@ namespace QuickSwitch
             string WindowTypeName = window.GetType().ToString();
 
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
             string assemblyName = "UnityEditor";
+
             foreach (var assembly in assemblies)
             {
                 var textType = assembly.GetType(WindowTypeName);
+
                 if (textType != null)
                 {
                     assemblyName = assembly.FullName;
+
                     //Debug.Log("found assemblyName "+ assemblyName + " for "+ WindowTypeName);
+
                     break;
                 }
             }
@@ -191,13 +190,15 @@ namespace QuickSwitch
             {
                 //Can't serialize type of this window as string
                 Debug.LogWarning("Can't serialize type of this window as string "+ WindowTypeName);
+
                 return;
             }
 
             if ( window.GetType().ToString().StartsWith("UnityEditor.InspectorWindow")) //currentWindow.titleContent.text == "Inspector")
             {
                 //Debug.LogWarning("Inspector type = "+ WindowTypeName);
-                if ( (QuickSwitch.Auto_inspector && Selection.activeGameObject != null) || CheckInspectorIsLocked(window))
+
+                if ( (QuickSwitch.Auto_inspector && Selection.activeGameObject != null) || QuickSwitch.CheckInspectorIsLocked(window))
                     return;
             }
 
@@ -228,42 +229,25 @@ namespace QuickSwitch
                 minimizedWindow.ShowPopup();
 
                 minimizedWindow.initialized = true;
-
-                //Register it again (after OnEnable) to detect windowTypeName
-                //QuickSwitch.RegisterMinimizedWindow(minimizedWindow);
             }
 
             return minimizedWindow;
         }
-
-        IEnumerator RestoreWindowRoutine(EditorWindow fullWindow, float t)
-        {
-            float period = 1 / 60f;
-            float timer = 0f;
-            while (timer < t)
-            {
-                timer += period;
-                yield return new WaitForSecondsRealtime(period);
-                float progress = t / timer;
-                fullWindow.position = new Rect(Vector2.Lerp(position.position, fullWindowPosition, progress), Vector2.Lerp(position.size, fullWindowSize, progress));
-            }
-            fullWindow.position = new Rect(fullWindowPosition, fullWindowSize);
-            Close();
-        }
-
-        string titleContentText;
-
+        
         private void OnFocus()
         {
             if (initialized)
             {
                 if (!QuickSwitch.ctrl)
+                {
                     RestoreWindow();
+                }
                 else
                 {
                     if (String.IsNullOrEmpty(titleContentText))
                         titleContentText = titleContent.text;
-                    titleContent.text = "["+titleContent.text+ "]";
+
+                    titleContent.text = "[" + titleContent.text + "]";
                 }
             }
         }
@@ -275,6 +259,9 @@ namespace QuickSwitch
 
         private void OnLostFocus()
         {
+            if (!String.IsNullOrEmpty(titleContentText))
+                titleContent.text = titleContentText;
+
             if (fullWindow == null)
             {
                 //Debug.LogWarning("OnLostFocus don't close - no full window");
@@ -283,6 +270,7 @@ namespace QuickSwitch
             else if (IsDragAndDrop)
             {
                 //Debug.Log("OnLostFocus don't close - Drag");
+                return;
             }
             else
             {
@@ -291,8 +279,7 @@ namespace QuickSwitch
                     //Debug.LogWarning("OnLostFocus Close");
                     if (QuickSwitch.ctrl)
                     {
-                        if (!String.IsNullOrEmpty(titleContentText))
-                            titleContent.text = titleContentText;
+                        return;
                     }
                     else
                     {
@@ -308,6 +295,7 @@ namespace QuickSwitch
             //Debug.Log(titleContent.text + " OnEnable");
 
             AssemblyReloadEvents.beforeAssemblyReload += beforeAssemblyReload;
+
             AssemblyReloadEvents.afterAssemblyReload += afterAssemblyReload;
 
             QuickSwitch.OnWindowAdded(this);
@@ -329,13 +317,16 @@ namespace QuickSwitch
             //So next editor restart leads to minimized tab not being created if it wasn't created via ScriptableObject.CreateInstance.
             //So we need to force ScriptableObject.CreateInstance again to save this tab.
             var minimized = createMinimizedWindow(titleContent, windowTypeName, new Rect(fullWindowPosition, fullWindowSize));
+
             Close();
         }
 
         private void OnDisable()
         {
             //Debug.Log(titleContent.text+" OnDisable"); 
+
             AssemblyReloadEvents.beforeAssemblyReload -= beforeAssemblyReload;
+
             QuickSwitch.OnWindowClosed(this);
         }
     }

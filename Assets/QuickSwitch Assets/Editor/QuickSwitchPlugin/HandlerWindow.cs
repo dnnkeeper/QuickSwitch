@@ -3,16 +3,20 @@ using UnityEngine;
 
 namespace QuickSwitch
 {
-
     public class HandlerWindow : PopupWindow
     {
         private GUISkin skin;
+
+        public bool vertical;
+
+        protected bool click;
 
         private void OnEnable()
         {
             if (QuickSwitch.handlerWindow == null)
             {
                 //Debug.Log("QuickSwitch.handlerWindow = "+this); 
+
                 QuickSwitch.handlerWindow = this;
             }
             else
@@ -20,7 +24,9 @@ namespace QuickSwitch
                 if (QuickSwitch.handlerWindow != this)
                 {
                     Debug.LogWarning("Handler already exist. Close()");
+
                     Close();
+
                     return;
                 }
             }
@@ -59,18 +65,17 @@ namespace QuickSwitch
         public static HandlerWindow Create(Vector2 panelPos, Vector2 handlerSize)
         {
             HandlerWindow handlerWindow = ScriptableObject.CreateInstance<HandlerWindow>();
+
             var handlerRect = new Rect(panelPos, handlerSize);
+
             handlerWindow.minSize = handlerRect.size;
+
             handlerWindow.position = handlerRect;
+
             handlerWindow.ShowPopup();
+
             return handlerWindow;
         }
-
-        public bool vertical;
-
-        //bool drag;
-
-        bool click;
 
         public override void OnGUI()
         {
@@ -87,11 +92,13 @@ namespace QuickSwitch
             if (e.button == 0 && e.type == EventType.MouseDown)
             {
                 //drag = false;
+
                 click = true;
             }
             else if (e.type == EventType.MouseDrag)
             {
                 //drag = true;
+
                 click = false;
             }
 
@@ -110,14 +117,6 @@ namespace QuickSwitch
             GUILayout.EndHorizontal();
 
             GUI.skin = null;
-
-            //pos = position.position;
-            //size = position.size;
-            //QuickSwitch.panelPos = position.position;
-            //if (GUILayout.Button("*"))
-            //{
-            //    Close();
-            //}
         }
     }
 }
